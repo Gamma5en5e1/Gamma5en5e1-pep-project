@@ -9,9 +9,6 @@ import Model.Account;
 import Model.Message;
 
 import java.util.List;
-
-import javax.print.DocFlavor.STRING;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 /**
@@ -79,9 +76,9 @@ public class SocialMediaController {
     private void registerAccount(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(),Account.class);
-        
+        account = accountService.addAccount(account);
         if(account!=null){
-            context.json(mapper.writeValueAsString(account));
+            context.json(mapper.writeValueAsString(accountService));
             context.status(200);
         }else{
             context.status(400);
@@ -90,9 +87,9 @@ public class SocialMediaController {
 
     private void createMessage(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
-        int posted_by = Integer.parseInt(context.pathParam("posted_by"));
-        String message_text = (context.pathParam("message_text")).toString();
-        Long time_posted_epoch = Long.parseLong(context.pathParam("time_posted_enough"));
+        Integer posted_by = Integer.parseInt(context.pathParam("posted_by"));
+        String message_text = context.appAttribute("message_text");
+        Long time_posted_epoch = context.appAttribute("time_posted_enough");
         Message message = messageService.createMessage(posted_by, message_text, time_posted_epoch);
         if(message==null){
             context.status(400);
@@ -104,7 +101,8 @@ public class SocialMediaController {
     private void login(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(),Account.class);
-        if((accountService.loginAccount(account)).account_id!=0){
+        account = accountService.loginAccount(account);
+        if(account.getAccount_id()!=0){
             context.json(mapper.writeValueAsString(account));
             context.status(200);
         }else{
@@ -115,7 +113,7 @@ public class SocialMediaController {
     private void updateMessage(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
         int message_id = Integer.parseInt(context.pathParam("message_id"));
-        Long message_text = Long.parseLong(context.pathParam("message_text"));
+        String message_text = context.pathParam("message_text");
         Message message = messageService.updateMessage(message_text, message_id);
             if(message==null){
                 context.status(400);

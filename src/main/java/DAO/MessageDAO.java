@@ -27,7 +27,7 @@ public class MessageDAO {
     public Message getMessageByID(int message_id){
         Connection connection = ConnectionUtil.getConnection();
         try{
-            String sql="SELECT * FROM MESSAGE WHERE (message.message_id) =?";
+            String sql="SELECT * FROM MESSAGE WHERE (message_id) =?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setInt(1,message_id);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -66,7 +66,7 @@ public class MessageDAO {
             PreparedStatement preparedStatement = connection.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);
             preparedStatement.setInt(1, posted_by);
             preparedStatement.setString(2, message_text);
-            preparedStatement.setLong(2, time_posted_epoch);
+            preparedStatement.setLong(3, time_posted_epoch);
             preparedStatement.executeUpdate();
             
             ResultSet resultSet = preparedStatement.getGeneratedKeys();
@@ -81,13 +81,13 @@ public class MessageDAO {
         return null;
     }
 
-    public Message updateMessage(Long message_text,int message_id){
+    public Message updateMessage(String message_text,int message_id){
         if(message_text.toString().length()<256&&getMessageByID(message_id)!=null){
             Connection connection = ConnectionUtil.getConnection();
             try{
             String sql = "UPDATE MESSAGE SET message.message_text=? WHERE message_id = ?";
             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-            preparedStatement.setLong(1, message_text);
+            preparedStatement.setString(1, message_text);
             preparedStatement.setInt(2, message_id);
             preparedStatement.executeUpdate();
             return getMessageByID(message_id);

@@ -25,7 +25,7 @@ public class MessageService {
         return messageDAO.createMessage(posted_by,message_text,time_posted_epoch);
     }
 
-    public Message updateMessage(Long message_text, int message_id){
+    public Message updateMessage(String message_text, int message_id){
         return messageDAO.updateMessage(message_text,message_id);
     }
 
