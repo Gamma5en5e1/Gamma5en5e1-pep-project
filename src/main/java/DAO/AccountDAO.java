@@ -6,18 +6,17 @@ import java.sql.*;
 public class AccountDAO {
     public Account addAccount(Account account){
         Connection connection = ConnectionUtil.getConnection();
-        if(account.getUsername()!=null && account.getPassword().length()>3 && login(account).account_id == account.account_id){
+        if(account.getUsername().length()>0 && account.getPassword().length()>3){
         try{
-            String sql="INSERT INTO account (username,password) VALUES (?,?)";
-            PreparedStatement preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            String sql=" INSERT INTO ACCOUNT(username,password) VALUES (?,?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
             preparedStatement.setString(1, account.getUsername());
             preparedStatement.setString(2, account.getPassword());
             preparedStatement.executeUpdate();
-            ResultSet kResultSet = preparedStatement.getGeneratedKeys();
-            if(kResultSet.next()){
-                int generated_account_id =(int) kResultSet.getLong(1);
-                return new Account(generated_account_id, account.getUsername(), account.getPassword());
-            }
+            //ResultSet kResultSet = preparedStatement.getGeneratedKeys();
+            //account.setAccount_id((int) kResultSet.getLong(1));
+            account.setAccount_id(1);
+            return login(account);
         }catch(SQLException e){
             System.out.println(e.getMessage());
         }

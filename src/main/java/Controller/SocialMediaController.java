@@ -4,9 +4,13 @@ import io.javalin.Javalin;
 import io.javalin.http.Context;
 import Service.AccountService;
 import Service.MessageService;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import Model.Account;
 import Model.Message;
+
+import static org.mockito.ArgumentMatchers.notNull;
 
 import java.util.List;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -60,16 +64,18 @@ public class SocialMediaController {
 
     private void getMessageByID(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
-        Message message = messageService.getMessageByID(mapper.readValue(context.pathParam("message_id"), int.class));
+        Message message = messageService.getMessageByID(mapper.readValue(context.pathParam("message_id"), Integer.class));
+        if(message!=null){
         context.json(mapper.writeValueAsString(message));
+        }
         context.status(200);
     }
 
     private void getMessagesByUser(Context context) throws JsonProcessingException{
-        //ObjectMapper mapper = new ObjectMapper();
-        int posted_by = Integer.parseInt(context.pathParam("posted_by"));
+        ObjectMapper mapper = new ObjectMapper();
+        int posted_by = mapper.readValue(context.pathParam("account_id"),Integer.class);
         List<Message> messages = messageService.getMessagesByUser(posted_by);
-        context.json(messages);
+        context.json(mapper.writeValueAsString(messages));
         context.status(200);
     }
 
@@ -77,20 +83,18 @@ public class SocialMediaController {
         ObjectMapper mapper = new ObjectMapper();
         Account account = mapper.readValue(context.body(),Account.class);
         account = accountService.addAccount(account);
-        if(account!=null){
-            context.json(mapper.writeValueAsString(accountService));
-            context.status(200);
-        }else{
+        if(account==null){
             context.status(400);
+        }else{
+            context.json(mapper.writeValueAsString(account));
+            context.status(200);
         };
     }
 
     private void createMessage(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
-        Integer posted_by = Integer.parseInt(context.pathParam("posted_by"));
-        String message_text = context.appAttribute("message_text");
-        Long time_posted_epoch = context.appAttribute("time_posted_enough");
-        Message message = messageService.createMessage(posted_by, message_text, time_posted_epoch);
+        Message message = mapper.readValue(context.body(),Message.class);
+        message = messageService.createMessage(message);
         if(message==null){
             context.status(400);
         }else{
@@ -111,22 +115,27 @@ public class SocialMediaController {
     }
 
     private void updateMessage(Context context) throws JsonProcessingException{
+        
         ObjectMapper mapper = new ObjectMapper();
-        int message_id = Integer.parseInt(context.pathParam("message_id"));
-        String message_text = context.pathParam("message_text");
-        Message message = messageService.updateMessage(message_text, message_id);
-            if(message==null){
-                context.status(400);
-            }else{
+        Message message = mapper.readValue(context.body(), Message.class);
+        Integer message_id = Integer.parseInt(context.pathParam("message_id"));
+        //String message_text = mapper.readValue(context.pathParam("message_text"),String.class);
+        message = messageService.updateMessage(message.getMessage_text(), message_id);
+            if(message!=null){
                 context.json(mapper.writeValueAsString(message));
                 context.status(200);
+            }else{
+                context.status(400);
             }
         }
 
     private void deleteMessageByID(Context context) throws JsonProcessingException{
         ObjectMapper mapper = new ObjectMapper();
-        Message message = messageService.deleteMessageByID(mapper.readValue(context.pathParam("message_id"), int.class));
+        Integer messageID = mapper.readValue(context.pathParam("message_id"), Integer.class);
+        Message message = messageService.deleteMessageByID(messageID);
+        if(message!=null){
         context.json(mapper.writeValueAsString(message));
+        }
         context.status(200);
     }
 }

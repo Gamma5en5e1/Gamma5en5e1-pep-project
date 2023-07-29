@@ -21,8 +21,8 @@ public class MessageService {
         return messageDAO.getMessagesByUser(posted_by);
     }
 
-    public Message createMessage(int posted_by,String message_text,long time_posted_epoch){
-        return messageDAO.createMessage(posted_by,message_text,time_posted_epoch);
+    public Message createMessage(Message message){
+        return messageDAO.createMessage(message);
     }
 
     public Message updateMessage(String message_text, int message_id){
